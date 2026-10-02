@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai_etf_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-etf_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-etf_password}
+      POSTGRES_DB: ${POSTGRES_DB:-etf_research}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-etf_user} -d ${POSTGRES_DB:-etf_research}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
